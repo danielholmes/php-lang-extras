@@ -1,0 +1,20 @@
+{
+    "name": "dholmes/lang-extras",
+    "type": "library",
+    "description": "Low level utilities and features for PHP",
+    "keywords": ["php"],
+    "authors": [
+        {
+            "name": "Daniel Holmes",
+            "email": "daniel@creatio.com.au"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2"
+    },
+    "autoload": {
+        "psr-0": {
+            "DHolmes\\LangExtras": "src/"
+        }
+    }
+}

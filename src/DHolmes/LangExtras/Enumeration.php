@@ -1,6 +1,6 @@
 <?php
 
-namespace DHolmes\LangExtra;
+namespace DHolmes\LangExtras;
 
 use Exception;
 use ReflectionClass;

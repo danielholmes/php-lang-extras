@@ -35,6 +35,16 @@ abstract class Enumeration
         return $this->name;
     }
     
+    /**
+     * @param Enumeration $other
+     * @return boolean
+     */
+    public function equals(Enumeration $other)
+    {
+        return (get_class($this) === get_class($other) &&
+                $this->getKey() === $other->getKey());
+    }
+    
     /** @return string */
     public function __toString()
     {

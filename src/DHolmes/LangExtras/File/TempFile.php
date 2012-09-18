@@ -4,17 +4,22 @@ namespace DHolmes\LangExtras\File;
 
 class TempFile
 {
+    /** @return string */
+    public static function getRandomPath()
+    {
+        return static::getWithExtension('');
+    }
+
     /**
      * @param string $extension
-     * @param string $prefix
-     * @return \SplFileInfo
+     * @return string
      */
-    public static function getWithExtension($extension = '', $prefix = '')
+    public static function getPathWithExtension($extension)
     {
-        $info = null;
+        $filepath = null;
 
         $MAX_TRIES = 1000;
-        for ($i = 0; $i < $MAX_TRIES; $i++)
+        for ($i = 0; $i < $MAX_TRIES && $filepath === null; $i++)
         {
             $testName = uniqid($prefix);
             if (!empty($extension))
@@ -25,7 +30,7 @@ class TempFile
 
             if (!file_exists($testFilepath))
             {
-                $info = new \SplFileInfo($testFilepath);
+                $filepath = $testFilepath;
             }
         }
 
@@ -34,6 +39,6 @@ class TempFile
             throw new \RuntimeException(sprintf('Some error generating file, %d unsuccessful attemps', $MAX_TRIES));
         }
 
-        return $info;
+        return $filepath;
     }
 }

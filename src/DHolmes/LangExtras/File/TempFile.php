@@ -7,7 +7,7 @@ class TempFile
     /** @return string */
     public static function getRandomPath()
     {
-        return static::getWithExtension('');
+        return static::getPathWithExtension('');
     }
 
     /**

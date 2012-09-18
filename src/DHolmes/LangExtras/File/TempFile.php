@@ -21,7 +21,7 @@ class TempFile
         $MAX_TRIES = 1000;
         for ($i = 0; $i < $MAX_TRIES && $filepath === null; $i++)
         {
-            $testName = uniqid($prefix);
+            $testName = uniqid();
             if (!empty($extension))
             {
                 $testName .= '.' . $extension;

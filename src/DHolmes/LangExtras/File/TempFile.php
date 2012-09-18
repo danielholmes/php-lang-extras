@@ -34,7 +34,7 @@ class TempFile
             }
         }
 
-        if ($info === null)
+        if ($filepath === null)
         {
             throw new \RuntimeException(sprintf('Some error generating file, %d unsuccessful attemps', $MAX_TRIES));
         }

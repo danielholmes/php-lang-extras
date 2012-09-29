@@ -11,15 +11,30 @@ class Clock
     public static function getCurrentTime()
     {
         $current = null;
-        if (self::$frozenTime === null)
-        {
-            $current = new \DateTime();
-        }
-        else
+        if (static::isFrozen())
         {
             $current = clone self::$frozenTime;
         }
+        else
+        {
+            $current = new \DateTime();
+        }
         return $current;
+    }
+
+    /** @return boolean */
+    public static function isFrozen()
+    {
+        return self::$frozenTime !== null;
+    }
+
+    public static function unfreezeTime()
+    {
+        if (!static::isFrozen())
+        {
+            throw new \LogicException('Time isn\'t frozen');
+        }
+        self::$frozenTime = null;
     }
 
     /** @param \DateTime $time */

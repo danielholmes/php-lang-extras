@@ -2,10 +2,6 @@
 
 namespace DHolmes\LangExtras;
 
-use Exception;
-use ReflectionClass;
-use InvalidArgumentException;
-
 abstract class Enumeration
 {
     /** @var string */
@@ -58,28 +54,26 @@ abstract class Enumeration
     public static function getAll()
     {
         $all = array();
-        foreach (static::getArgsByKey() as $key=>$extraArgs)
+        foreach (static::getValueDescriptions() as $description)
         {
-            if (!is_array($extraArgs))
-            {
-                $extraArgs = array($extraArgs);
-            }
-            $all[] = self::getCachedOrCreate($key, $extraArgs);
+            $all[] = self::getCachedOrCreate($description);
         }
         return $all;
     }
     
     /**
-     * @param string $key
-     * @param array $extraArgs
+     * @param EnumerationValueDescription $description
      * @return Enumeration
      */
-    private static function getCachedOrCreate($key, array $extraArgs)
+    private static function getCachedOrCreate(EnumerationValueDescription $description)
     {
+        $key = $description->getKey();
+
         // TODO: This should be cached by calling class - to allow the situation of inheritance
+        // TODO: Possible issue of conflict between '1' and 1
         if (!isset(self::$instancesByKey[$key]))
         {
-            self::$instancesByKey[$key] = static::create($key, $extraArgs);
+            self::$instancesByKey[$key] = static::create($description);
         }
         return self::$instancesByKey[$key];
     }
@@ -95,7 +89,7 @@ abstract class Enumeration
         {
             $class = get_called_class();
             $message = sprintf('"%s" is an invalid value for enumeration %s', $key, $class);
-            throw new InvalidArgumentException($message);
+            throw new \InvalidArgumentException($message);
         }
         
         return $target;
@@ -151,38 +145,41 @@ abstract class Enumeration
     }
     
     /** @return array */
-    protected static function getArgsByKey()
+    protected static function getValueDescriptions()
     {
-        $descriptionsByKey = array();
+        $descriptions = array();
+
+        $foundValues = array();
+
         $class = get_called_class();
-        $refClass = new ReflectionClass($class);
-        foreach ($refClass->getConstants() as $variableName=>$value)
+        $refClass = new \ReflectionClass($class);
+        foreach ($refClass->getConstants() as $variableName => $value)
         {
             $spacedName = join(' ', explode('_', $variableName));
             $description = ucwords(strtolower($spacedName));
-            if (isset($descriptionsByKey[$value]))
+            if (!in_array($value, $foundValues))
             {
-                $message = sprintf('Enumeration values must be unique, "%s" has duplicate of "%s" named "%s"',
-                            $class, $value, $variableName);
-                throw new Exception($message);
+                $foundValues[] = $value;
+                $descriptions[] = new EnumerationValueDescription($value, $description);
             }
             else
             {
-                $descriptionsByKey[$value] = array($description);
+                $message = sprintf('Enumeration values must be unique, "%s" has duplicate of "%s" named "%s"',
+                    $class, $value, $variableName);
+                throw new \LogicException($message);
             }
         }
-        
-        return $descriptionsByKey;
+
+        return $descriptions;
     }
     
     /**
-     * @param string $key
-     * @param array $extraArgs
+     * @param EnumerationValueDescription $description
      * @return mixed
      */
-    protected static function create($key, array $extraArgs)
+    protected static function create(EnumerationValueDescription $description)
     {
-        $args = array_merge(array($key), $extraArgs);
+        $args = array($description->getKey(), $description->getDescription());
         
         // TODO: Need to find a way to setAccessible on constructor to make public
         /*

@@ -106,11 +106,15 @@ class Clock
     }
 
     /**
-     * @param string $description
+     * @param string|int $description
      * @return \DateTime
      */
     public function createTime($description = 'now')
     {
+        if (is_int($description))
+        {
+            $description = date('Y-m-d H:i:s', $description);
+        }
         return new \DateTime($description, $this->timezone);
     }
 
@@ -141,7 +145,7 @@ class Clock
     }
 
     /**
-     * @param string $description
+     * @param string|int $description
      * @return \DateTime
      */
     public static function createGlobalTime($description = 'now')

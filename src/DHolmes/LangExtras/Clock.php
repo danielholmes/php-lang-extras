@@ -172,7 +172,7 @@ class Clock
     }
 
     /** @return boolean */
-    public function isGlobalFrozen()
+    public static function isGlobalFrozen()
     {
         return static::getGlobal()->isFrozen();
     }

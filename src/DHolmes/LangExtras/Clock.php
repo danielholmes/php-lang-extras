@@ -171,6 +171,12 @@ class Clock
         return static::getGlobal()->getFrozenTime();
     }
 
+    /** @return boolean */
+    public function isGlobalFrozen()
+    {
+        return static::getGlobal()->isFrozen();
+    }
+
     /**
      * @param \DateInterval $interval
      * @param \DateTimeZone $timezone

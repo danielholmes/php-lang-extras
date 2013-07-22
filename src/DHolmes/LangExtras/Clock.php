@@ -5,41 +5,190 @@ namespace DHolmes\LangExtras;
 class Clock
 {
     /** @var \DateTime */
-    private static $frozenTime;
+    private $currentTime;
 
-    /** @return \DateTime */
-    public static function getCurrentTime()
+    /** @var \DateTimeZone */
+    private $timezone;
+
+    /** @param \DateTimeZone $timezone */
+    public function __construct(\DateTimeZone $timezone)
     {
-        $current = null;
-        if (static::isFrozen())
+        $this->timezone = $timezone;
+    }
+
+    /**
+     * @param \DateTime|string $time
+     */
+    public function freezeTimeAt($time)
+    {
+        $description = $time;
+
+        if ($time instanceof \DateTime)
         {
-            $current = clone self::$frozenTime;
+            $description = '@' . $time->getTimestamp();
         }
-        else
+
+        $this->currentTime = $this->createTime($description);
+    }
+
+    public function unfreezeTime()
+    {
+        if (!$this->isFrozen())
         {
-            $current = new \DateTime();
+            throw new \RuntimeException('Clock isn\'t frozen');
         }
-        return $current;
+        $this->currentTime = null;
     }
 
     /** @return boolean */
-    public static function isFrozen()
+    public function isFrozen()
     {
-        return self::$frozenTime !== null;
+        return $this->currentTime !== null;
     }
 
-    public static function unfreezeTime()
+    /**
+     * @param \DateTimeZone $timezone
+     * @return \DateTime
+     */
+    public function getCurrentTime(\DateTimeZone $timezone = null)
     {
-        if (!static::isFrozen())
+        if (null === $timezone)
         {
-            throw new \LogicException('Time isn\'t frozen');
+            $timezone = $this->timezone;
         }
-        self::$frozenTime = null;
+
+        if ($this->isFrozen())
+        {
+            $frozenDate = clone $this->currentTime;
+            $frozenDate->setTimezone($timezone);
+
+            return $frozenDate;
+        }
+
+        return $this->createTime('now');
     }
 
-    /** @param \DateTime $time */
-    public static function freezeTimeAt(\DateTime $time)
+    /** @return \DateTime */
+    public function getFrozenTime()
     {
-        self::$frozenTime = clone $time;
+        if ($this->isFrozen())
+        {
+            return clone $this->currentTime;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \DateInterval $interval
+     * @param \DateTimeZone $timezone
+     * @return \DateTime
+     */
+    public function getCurrentTimeAddInterval(\DateInterval $interval, \DateTimeZone $timezone = null)
+    {
+        $current = $this->getCurrentTime($timezone);
+        $current->add($interval);
+
+        return $current;
+    }
+
+    /**
+     * @param \DateInterval $interval
+     * @param \DateTimeZone $timezone
+     * @return \DateTime
+     */
+    public function getCurrentTimeSubInterval(\DateInterval $interval, \DateTimeZone $timezone = null)
+    {
+        $current = $this->getCurrentTime($timezone);
+        $current->sub($interval);
+
+        return $current;
+    }
+
+    /**
+     * @param string $description
+     * @return \DateTime
+     */
+    public function createTime($description = 'now')
+    {
+        return new \DateTime($description, $this->timezone);
+    }
+
+    /** @return \DateTime */
+    public function createEndOfTime()
+    {
+        return $this->createTime('9999-12-31 23:59:59');
+    }
+
+    /** @var Clock */
+    private static $globalClock;
+
+    /** @return Clock */
+    public static function getGlobal()
+    {
+        if (null === self::$globalClock) {
+            $defaultTimezone = new \DateTimeZone('UTC');
+            self::$globalClock = new Clock($defaultTimezone);
+        }
+
+        return self::$globalClock;
+    }
+
+    /** @param \DateTime|string $time */
+    public static function freezeGlobalTimeAt($time)
+    {
+        static::getGlobal()->freezeTimeAt($time);
+    }
+
+    /**
+     * @param string $description
+     * @return \DateTime
+     */
+    public static function createGlobalTime($description = 'now')
+    {
+        return static::getGlobal()->createTime($description);
+    }
+
+    /** @return \DateTime */
+    public static function createGlobalEndOfTime()
+    {
+        return static::getGlobal()->createEndOfTime();
+    }
+
+    /**
+     * @param \DateInterval $interval
+     * @param \DateTimeZone $timezone
+     * @return \DateTime
+     */
+    public static function getGlobalCurrentTimeAddInterval(\DateInterval $interval, \DateTimeZone $timezone = null)
+    {
+        return static::getGlobal()->getCurrentTimeAddInterval($interval, $timezone);
+    }
+
+    /** @return \DateTime */
+    public static function getGlobalFrozenTime()
+    {
+        return static::getGlobal()->getFrozenTime();
+    }
+
+    /**
+     * @param \DateInterval $interval
+     * @param \DateTimeZone $timezone
+     * @return \DateTime
+     */
+    public static function getGlobalCurrentTimeSubInterval(\DateInterval $interval, \DateTimeZone $timezone = null)
+    {
+        return static::getGlobal()->getCurrentTimeSubInterval($interval, $timezone);
+    }
+
+    /** @return \DateTime */
+    public static function getGlobalCurrentTime()
+    {
+        return self::getGlobal()->getCurrentTime();
+    }
+
+    public static function unfreezeGlobalTime()
+    {
+        static::getGlobal()->unfreezeTime();
     }
 }

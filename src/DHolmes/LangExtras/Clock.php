@@ -39,6 +39,15 @@ class Clock
         }
         $this->currentTime = null;
     }
+    
+    public function unfreezeTimeIfFrozen()
+    {
+        if (!$this->isFrozen())
+        {
+            return;
+        }
+        $this->unfreezeTime();
+    }
 
     /** @return boolean */
     public function isFrozen()
@@ -200,5 +209,10 @@ class Clock
     public static function unfreezeGlobalTime()
     {
         static::getGlobal()->unfreezeTime();
+    }
+
+    public static function unfreezeGlobalTimeIfFrozen()
+    {
+        static::getGlobal()->unfreezeTimeIfFrozen();
     }
 }
